@@ -1,6 +1,3 @@
-import './style.css'
-import './whitepaper.css'
-
 // Initialize Spline video background
 function initSplineBackground() {
   const splineContainer = document.querySelector('#spline-background') as HTMLElement
@@ -72,6 +69,7 @@ function initTheme() {
   const savedTheme = localStorage.getItem('sofia-theme') || 'light'
   document.documentElement.setAttribute('data-theme', savedTheme)
   updateThemeIcon(savedTheme === 'dark')
+  updateWelcomeImage(savedTheme === 'dark')
 }
 
 function toggleTheme() {
@@ -87,6 +85,9 @@ function toggleTheme() {
   if (video) {
     updateVideoSource(video)
   }
+  
+  // Update welcome image
+  updateWelcomeImage(newTheme === 'dark')
 }
 
 function updateThemeIcon(isDark: boolean) {
@@ -96,25 +97,49 @@ function updateThemeIcon(isDark: boolean) {
   }
 }
 
-// White paper scroll animations
-function initWhitepaperAnimations() {
-  const sections = document.querySelectorAll('.whitepaper-section')
-  let currentSection = 0
+function updateWelcomeImage(isDark: boolean) {
+  const welcomeImage = document.querySelector('.welcome-image') as HTMLImageElement
+  if (welcomeImage) {
+    welcomeImage.src = isDark ? '/assets/Welcome.svg' : '/assets/Welcome_back.svg'
+  }
+}
+
+// Add navigation functionality
+function initNavigation() {
+  const themeToggle = document.getElementById('theme-toggle')
+  const whitepaperLink = document.querySelector('.nav-link')
+  
+  // Theme toggle functionality
+  themeToggle?.addEventListener('click', toggleTheme)
+  
+  // White paper navigation
+  whitepaperLink?.addEventListener('click', (e) => {
+    e.preventDefault()
+    ;(window as any).navigateTo('/whitepaper')
+  })
+}
+
+// Add scroll-based block system
+function initAnimations() {
+  const blocks = document.querySelectorAll('.scroll-block')
+  let currentBlock = 0
   let isScrolling = false
 
-  function showSection(index: number) {
-    sections.forEach((section, i) => {
-      section.classList.remove('active', 'next', 'prev')
+  function showBlock(index: number) {
+    blocks.forEach((block, i) => {
+      block.classList.remove('active', 'next', 'prev')
       
       if (i === index) {
-        section.classList.add('active')
+        block.classList.add('active')
       } else if (i > index) {
-        section.classList.add('next')
+        // Blocs suivants viennent du bas
+        block.classList.add('next')
       } else {
-        section.classList.add('prev')
+        // Blocs précédents vont vers le haut
+        block.classList.add('prev')
       }
     })
-    currentSection = index
+    currentBlock = index
   }
 
   // Handle wheel scroll
@@ -126,13 +151,13 @@ function initWhitepaperAnimations() {
     
     if (e.deltaY > 0) {
       // Scroll down
-      if (currentSection < sections.length - 1) {
-        showSection(currentSection + 1)
+      if (currentBlock < blocks.length - 1) {
+        showBlock(currentBlock + 1)
       }
     } else {
       // Scroll up  
-      if (currentSection > 0) {
-        showSection(currentSection - 1)
+      if (currentBlock > 0) {
+        showBlock(currentBlock - 1)
       }
     }
     
@@ -147,47 +172,42 @@ function initWhitepaperAnimations() {
     
     if (e.key === 'ArrowDown' || e.key === 'PageDown') {
       e.preventDefault()
-      if (currentSection < sections.length - 1) {
+      if (currentBlock < blocks.length - 1) {
         isScrolling = true
-        showSection(currentSection + 1)
+        showBlock(currentBlock + 1)
         setTimeout(() => { isScrolling = false }, 1000)
       }
     } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
       e.preventDefault()
-      if (currentSection > 0) {
+      if (currentBlock > 0) {
         isScrolling = true
-        showSection(currentSection - 1)
+        showBlock(currentBlock - 1)
         setTimeout(() => { isScrolling = false }, 1000)
       }
     }
   })
 
-  // Initialize with first section
-  showSection(0)
+  // Initialize with first block
+  showBlock(0)
 }
 
-// Add navigation functionality
-function initNavigation() {
-  const themeToggle = document.getElementById('theme-toggle')
-  
-  // Theme toggle functionality
-  themeToggle?.addEventListener('click', toggleTheme)
+// Add resize handler
+function initResizeHandler() {
+  window.addEventListener('resize', () => {
+    // Handle responsive adjustments if needed
+    const navbar = document.querySelector('.navbar') as HTMLElement
+    if (navbar && window.innerWidth < 768) {
+      // Mobile adjustments
+      navbar.style.padding = '1rem'
+    }
+  })
 }
 
-// Initialize everything when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+// Main initialization function for homepage
+export function initHomepage() {
   initTheme()
   initSplineBackground()
   initNavigation()
-  initWhitepaperAnimations()
-})
-
-// Add resize handler
-window.addEventListener('resize', () => {
-  // Handle responsive adjustments if needed
-  const navbar = document.querySelector('.navbar') as HTMLElement
-  if (navbar && window.innerWidth < 768) {
-    // Mobile adjustments
-    navbar.style.padding = '1rem'
-  }
-})
+  initAnimations()
+  initResizeHandler()
+}

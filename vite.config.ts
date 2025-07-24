@@ -4,8 +4,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: 'index.html',
-        whitepaper: 'src/whitepaper.html'
+        main: 'index.html'
       }
     }
   },
